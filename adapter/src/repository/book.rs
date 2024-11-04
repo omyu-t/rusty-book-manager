@@ -38,9 +38,9 @@ impl BookRepository for BookRepositoryImpl {
             event.description,
             user_id as _
         )
-          .execute(self.db.inner_ref())
-          .await
-          .map_err(AppError::SpecificOperationError)?;
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
         Ok(())
     }
 
@@ -69,9 +69,9 @@ impl BookRepository for BookRepositoryImpl {
             limit,
             offset
         )
-          .fetch_all(self.db.inner_ref())
-          .await
-          .map_err(AppError::SpecificOperationError)?;
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
         let total = rows.first().map(|r| r.total).unwrap_or_default(); // レコードが 1 つもないときは total も 0 にする
         let book_ids = rows.into_iter().map(|r| r.id).collect::<Vec<BookId>>();
@@ -94,19 +94,19 @@ impl BookRepository for BookRepositoryImpl {
             "#,
             &book_ids as _
         )
-          .fetch_all(self.db.inner_ref())
-          .await
-          .map_err(AppError::SpecificOperationError)?;
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
         let book_ids = rows.iter().map(|book| book.book_id).collect::<Vec<_>>();
         let mut checkouts = self.find_checkouts(&book_ids).await?;
         let items = rows
-          .into_iter()
-          .map(|row| {
-              let checkout = checkouts.remove(&row.book_id);
-              row.into_book(checkout)
-          })
-          .collect();
+            .into_iter()
+            .map(|row| {
+                let checkout = checkouts.remove(&row.book_id);
+                row.into_book(checkout)
+            })
+            .collect();
 
         Ok(PaginatedList {
             total,
@@ -137,9 +137,9 @@ impl BookRepository for BookRepositoryImpl {
             "#,
             book_id as _
         )
-          .fetch_optional(self.db.inner_ref())
-          .await
-          .map_err(AppError::SpecificOperationError)?;
+        .fetch_optional(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
         match row {
             Some(r) => {
@@ -172,9 +172,9 @@ impl BookRepository for BookRepositoryImpl {
             event.book_id as _,
             event.requested_user as _
         )
-          .execute(self.db.inner_ref())
-          .await
-          .map_err(AppError::SpecificOperationError)?;
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
         if res.rows_affected() < 1 {
             return Err(AppError::EntityNotFound("specified book not found".into()));
         }
@@ -194,9 +194,9 @@ impl BookRepository for BookRepositoryImpl {
             event.book_id as _,
             event.requested_user as _
         )
-          .execute(self.db.inner_ref())
-          .await
-          .map_err(AppError::SpecificOperationError)?;
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
         if res.rows_affected() < 1 {
             return Err(AppError::EntityNotFound("specified book not found".into()));
@@ -225,12 +225,12 @@ impl BookRepositoryImpl {
             "#,
             book_ids as _
         )
-          .fetch_all(self.db.inner_ref())
-          .await
-          .map_err(AppError::SpecificOperationError)?
-          .into_iter()
-          .map(|checkout| (checkout.book_id, Checkout::from(checkout)))
-          .collect();
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?
+        .into_iter()
+        .map(|checkout| (checkout.book_id, Checkout::from(checkout)))
+        .collect();
 
         Ok(res)
     }
@@ -249,17 +249,17 @@ mod tests {
         // テストコードで、このようなデータベースにあらかじめデータを追加しておくために
         // fixture という機能が便利であるが、次章で解説するためここでは愚直な実装としておく。
         sqlx::query!(r#"INSERT INTO roles(name) VALUES ('Admin'), ('User');"#)
-          .execute(&pool)
-          .await?;
+            .execute(&pool)
+            .await?;
         let user_repo = UserRepositoryImpl::new(ConnectionPool::new(pool.clone()));
         let repo = BookRepositoryImpl::new(ConnectionPool::new(pool.clone()));
         let user = user_repo
-          .create(CreateUser {
-              name: "Test User".into(),
-              email: "test@example.com".into(),
-              password: "test_password".into(),
-          })
-          .await?;
+            .create(CreateUser {
+                name: "Test User".into(),
+                email: "test@example.com".into(),
+                password: "test_password".into(),
+            })
+            .await?;
         let book = CreateBook {
             title: "Test Title".into(),
             author: "Test Author".into(),
